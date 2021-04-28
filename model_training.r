@@ -1,9 +1,13 @@
 # importing libraries
 library(tidymodels)
 library(readr)
+library(yardstick)
 
 # importing data, Ames housing data is available through R datasets
 data(ames, package='modeldata')
+
+# setting random seed for reproducibility
+set.seed(777)
 
 # train/test split
 ames_split <- initial_split(ames, prop=0.8, strata=Sale_Price)
@@ -12,9 +16,6 @@ ames_test <- testing(ames_split)
 
 # getting the log of Sale_Price, to normalize the distribution
 ames <- mutate(ames, Sale_Price = log10(Sale_Price))
-
-# setting random seed for reproducibility
-set.seed(777)
 
 # save the train and test data for later use
 write_csv(ames_train, "baseline.csv")
@@ -34,7 +35,7 @@ ames_recipe <-
     # interaction term between log(Gr_Liv_Area) and all "Bldg_Type_" dummied features
     step_interact(~ Gr_Liv_area:starts_with("Bldg_Type_")) %>%
     # adding spline representation
-    step_ns(Latitude, Longitude, deg_free=20) 
+    step_ns(Latitude, Longitude, deg_free=20)
 
 # fitting the model, simple linear regression
 lm_model <- linear_reg() %>% set_engine('lm')
@@ -62,8 +63,8 @@ metrics(train_scored, truth=Sale_Price, estimate=.pred)
 metrics(test_scored, truth=Sale_Price, estimate=.pred)
 
 # rename columns: Sale_Price -> ground_truth, .pred -> prediction
-train_scored <- rename(train_scored, ground_truth = Sale_Price, prediction = .pred) %>% relocate(ground_truth)
-test_scored <- rename(test_scored, ground_truth = Sale_Price, prediction = .pred) %>% relocate(ground_truth)
+train_scored <- rename(train_scored, ground_truth = Sale_Price, prediction = .pred) %>% relocate(ground_truth, prediction)
+test_scored <- rename(test_scored, ground_truth = Sale_Price, prediction = .pred) %>% relocate(ground_truth, prediction)
 
 # save "scored" dataframes for later analysis
 write_csv(train_scored, "baseline_scored.csv")
@@ -79,12 +80,16 @@ save(lm_fit, file="trained_model.RData")
 # importing libraries
 library(tidymodels)
 library(readr)
+library(yardstick)
 
 # loading fit model
 load("trained_model.RData")
+
+# re-assigning model for clarity
+model <- lm_fit
 
 # loading test data
 test_data <- read_csv("sample.csv")
 
 # predicting
-predict(lm_fit, test_data)
+predict(model, test_data)
