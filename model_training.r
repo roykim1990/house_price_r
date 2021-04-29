@@ -2,6 +2,17 @@
 library(tidymodels)
 library(readr)
 library(yardstick)
+library(jsonlite)
+library(purrr)
+library(stringr)
+
+# function to write json files
+write_json <- function(object, filename){
+    s <- toJSON(object)
+    s <- substring(s, 2, nchar(s) - 1)
+    s <- str_replace_all(s, "\\},", "\\}\n")
+    write(s, filename)
+}
 
 # importing data, Ames housing data is available through R datasets
 data(ames, package='modeldata')
@@ -18,8 +29,10 @@ ames_test <- testing(ames_split)
 ames <- mutate(ames, Sale_Price = log10(Sale_Price))
 
 # save the train and test data for later use
-write_csv(ames_train, "baseline.csv")
-write_csv(ames_test, "sample.csv")
+# write_csv(ames_train, "baseline.csv")
+# write_csv(ames_test, "sample.csv")
+write_json(ames_train, "baseline.json")
+write_json(ames_test, "sample.json")
 
 # feature engineering
 ames_recipe <- 
@@ -67,8 +80,8 @@ train_scored <- rename(train_scored, ground_truth = Sale_Price, prediction = .pr
 test_scored <- rename(test_scored, ground_truth = Sale_Price, prediction = .pred) %>% relocate(ground_truth, prediction)
 
 # save "scored" dataframes for later analysis
-write_csv(train_scored, "baseline_scored.csv")
-write_csv(test_scored, "sample_scored.csv")
+write_json(train_scored, "baseline_scored.json")
+write_json(test_scored, "sample_scored.json")
 
 # persisting the fit model
 save(lm_fit, file="trained_model.RData")

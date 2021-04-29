@@ -1,4 +1,4 @@
-packages <- c("readr", "tidymodels", "yardstick")
+packages <- c("readr", "tidymodels")
 install.packages(setdiff(packages, rownames(installed.packages())), repos="http://cran.us.r-project.org")
 
 library(tidymodels)
@@ -13,18 +13,16 @@ begin <- function() {
 
 # modelop.score
 action <- function(datum) {
-    df = data.frame(datum, stringsAsFactors=F)
+    df <- data.frame(datum, stringsAsFactors=F)
     preds <- predict(model, df)
     output <- list(ground_truth=df$Sale_Price, prediction=preds$.pred)
     emit(output)
-    # return(outcome)
 }
 
 # modelop.metrics
 metrics <- function(data){
-    df = data.frame(data, stringsAsFactors=F)
+    df <- data.frame(data)
     get_metrics <- metric_set(rmse, rsq, mae)
-    output <- get_metrics(data=df, truth=ground_truth, estimate=prediction)
+    output <- get_metrics(data=df, truth=X0.ground_truth, estimate=X0.prediction)
     emit(output)
-    # return(output)
 }
