@@ -93,7 +93,7 @@ save(lm_fit, file="trained_model.RData")
 # importing libraries
 library(tidymodels)
 library(readr)
-library(yardstick)
+library(jsonlite)
 
 # loading fit model
 load("trained_model.RData")
@@ -101,8 +101,9 @@ load("trained_model.RData")
 # re-assigning model for clarity
 model <- lm_fit
 
-# loading test data
-test_data <- read_csv("sample.csv")
+# loading test data (flatten to prevent nesting)
+data_in <- stream_in(file("sample.json"),flatten = TRUE)
+test_data <- tibble(data_in)
 
 # predicting
 predict(model, test_data)
