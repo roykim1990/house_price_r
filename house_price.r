@@ -3,7 +3,7 @@ library(readr)
 
 # modelop.init
 begin <- function() {
-    load("trained_model.RData")
+    source("trained_model.RData")
     # reassigning model artifact to a new variable
     model <<- lm_fit
 }
