@@ -1,14 +1,22 @@
 # house_price_r
 A sample data science project that uses a Linear Regression model built in R to predict house price from the Ames Housing Data dataset. Specifically, this example is used to demonstrate the creating of ModelOp Center (MOC)-compliant code.
 
+## Local testing environment
+To run locally, first make sure the R version and libraries match the training envorinment. The model was trained on R-4.2.1. To install the required packages, run
+```
+$ R -e 'install.packages("remotes", repos="http://cran.rstudio.com", dependencies=TRUE);'
+$ R -e 'remotes::install_url(url="https://cran.r-project.org/src/contrib/Archive/readr/readr_1.4.0.tar.gz", dependencies=TRUE, upgrade=TRUE);'
+$ R -e 'remotes::install_url(url="https://cran.r-project.org/src/contrib/Archive/tidymodels/tidymodels_0.1.4.tar.gz", dependencies=TRUE, upgrade=TRUE);'
+```
+
 ## Assets:
 - `house_price.R` is the R code that houses the MOC-compliant code to predict and get metrics on data.
 - `trained_model.RData` is the trained model artifact that is loaded upon prediction. In our case, the artifact is a workflow built on top of a recipe that includes a few data cleaning steps and a call to a linear regression model.
 - The datasets used for **scoring** are `baseline.json` and `sample.json`. These datasets represent raw data that would first be run into a batch scoring job. A sample of the outcome to the scoring job is provided in the `output_action_sample.json` file.
-- The datasets for **metrics** are `baseline_scored.json` and `sample_scored.json`. These datasets represent data that has appended the predictions from a scoring job. The columns are renamed to be compliant with MOC; `Sale_Price` is renamed to `ground_truth` and the prediction column is named `prediction`.
+- The datasets for **metrics** are `baseline_scored.json` and `sample_scored.json`. These datasets represent data that has appended the predictions from a scoring job. The column `Sale_Price` is renamed to `ground_truth` (not a necessary step).
 
 ## Directions:
-1. For a **scoring** job, use the `baseline.json` or the `sample.json` files. The output is a JSON string object that has the orignal `Sale_Price` and `prediction` for each input row.
+1. For a **scoring** job, use the `baseline.json` or the `sample.json` files. The output is a JSON object that has the orignal `Sale_Price` and `prediction` for each input row.
 2. For a **metrics** job, use the `baseline_scored.json` or the `sample_scored.json` files. THe output is a list of the relevant metrics (RMSE, R2, MAE) for the regression model.
 
 The input data to the **scoring** job is `sample.json`, which is a JSON-lines file (one-line JSON records). Here are the first two records:
