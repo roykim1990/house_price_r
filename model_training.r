@@ -17,6 +17,9 @@ write_json <- function(object, filename){
 # importing data, Ames housing data is available through R datasets
 data(ames, package='modeldata')
 
+# getting the log of Sale_Price, to normalize the distribution
+ames <- mutate(ames, Sale_Price_log = log10(Sale_Price))
+
 # setting random seed for reproducibility
 set.seed(777)
 
@@ -25,8 +28,6 @@ ames_split <- initial_split(ames, prop=0.8, strata=Sale_Price)
 ames_train <- training(ames_split)
 ames_test <- testing(ames_split)
 
-# getting the log of Sale_Price, to normalize the distribution
-ames <- mutate(ames, Sale_Price = log10(Sale_Price))
 
 # save the train and test data for later use
 # write_csv(ames_train, "baseline.csv")
@@ -36,9 +37,9 @@ write_json(ames_test, "sample.json")
 
 # feature engineering
 ames_recipe <- 
-    # selecting certain columns to predict Sale_Price
-    recipe(Sale_Price ~ Neighborhood + Gr_Liv_Area + Year_Built + Bldg_Type +
-           Latitude + Longitude, data=ames_train) %>%
+    # selecting certain columns to predict Sale_Price_log
+    recipe(Sale_Price_log ~ Neighborhood + Gr_Liv_Area + Year_Built + 
+        Bldg_Type + Latitude + Longitude, data=ames_train) %>%
     # deriving log of Gr_Liv_Area
     step_log(Gr_Liv_Area, base=10) %>%
     # reassigning neighborhoods that are less than 1% of total as "other"
@@ -46,9 +47,10 @@ ames_recipe <-
     # dummying nominal (categorical and factor) features
     step_dummy(all_nominal_predictors()) %>%
     # interaction term between log(Gr_Liv_Area) and all "Bldg_Type_" dummied features
-    step_interact(~ Gr_Liv_area:starts_with("Bldg_Type_")) %>%
+    step_interact(terms=~Gr_Liv_Area:starts_with("Bldg_Type")) %>%
     # adding spline representation
     step_ns(Latitude, Longitude, deg_free=20)
+    # prep(verbose = TRUE, log_changes = TRUE)
 
 # fitting the model, simple linear regression
 lm_model <- linear_reg() %>% set_engine('lm')
@@ -63,8 +65,8 @@ lm_workflow <-
 lm_fit <- fit(lm_workflow, ames_train)
 
 # predicting on new data
-train_preds <- predict(lm_fit, ames_train)
-test_preds <- predict(lm_fit, ames_test)
+train_preds <- 10^predict(lm_fit, ames_train)
+test_preds <- 10^predict(lm_fit, ames_test)
 
 # binding predictions to original dataframes
 train_scored <- bind_cols(train_preds, ames_train)
@@ -76,8 +78,13 @@ metrics(train_scored, truth=Sale_Price, estimate=.pred)
 metrics(test_scored, truth=Sale_Price, estimate=.pred)
 
 # rename columns: Sale_Price -> ground_truth, .pred -> prediction
-train_scored <- rename(train_scored, ground_truth = Sale_Price, prediction = .pred) %>% relocate(ground_truth, prediction)
-test_scored <- rename(test_scored, ground_truth = Sale_Price, prediction = .pred) %>% relocate(ground_truth, prediction)
+# use relocate to place new fields as the initial keys
+train_scored <- rename(
+    train_scored, ground_truth = Sale_Price, prediction = .pred) %>% 
+    relocate(ground_truth, prediction)
+test_scored <- rename(
+    test_scored, ground_truth = Sale_Price, prediction = .pred) %>% 
+    relocate(ground_truth, prediction)
 
 # save "scored" dataframes for later analysis
 write_json(train_scored, "baseline_scored.json")
@@ -103,7 +110,6 @@ model <- lm_fit
 
 # loading test data (flatten to prevent nesting)
 data_in <- stream_in(file("sample.json"),flatten = TRUE)
-test_data <- tibble(data_in)
 
-# predicting
-predict(model, test_data)
+# predicting (model predicts log of Sale_Price)
+10^predict(model, data_in)
