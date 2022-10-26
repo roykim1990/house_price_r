@@ -1,20 +1,18 @@
-packages <- c("readr", "tidymodels")
-install.packages(setdiff(packages, rownames(installed.packages())), repos="http://cran.us.r-project.org")
-
 library(tidymodels)
 library(readr)
 
 # modelop.init
 begin <- function() {
     load("trained_model.RData")
-    # reassigning model artifact to a new variable
+    # Assigning model artifact to a global variable
     model <<- lm_fit
 }
 
 # modelop.score
 action <- function(datum) {
     df <- data.frame(datum, stringsAsFactors=F)
-    preds <- predict(model, df)
+    # model predicts log of Sale_Price
+    preds <- 10^predict(model, df)
     output <- list(ground_truth=df$Sale_Price, prediction=preds$.pred)
     emit(output)
 }
@@ -22,6 +20,7 @@ action <- function(datum) {
 # modelop.metrics
 metrics <- function(data){
     df <- data.frame(data)
+    # Compute RMSE, R_squared, MAE, given scored and labeled data
     get_metrics <- metric_set(rmse, rsq, mae)
     output <- get_metrics(data=df, truth=X0.ground_truth, estimate=X0.prediction)
     emit(output)
