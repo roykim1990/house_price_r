@@ -5,7 +5,7 @@ A sample data science project that uses a Linear Regression model built in R to 
 To run locally, first make sure the R version and libraries match the training envorinment. The model was trained on R-4.2.1. To install the required packages, run
 ```
 $ R -e 'install.packages("remotes", repos="http://cran.rstudio.com", dependencies=TRUE);'
-$ R -e 'remotes::install_url(url="https://cran.r-project.org/src/contrib/Archive/readr/readr_1.4.0.tar.gz", dependencies=TRUE, upgrade=TRUE);'
+$ R -e 'remotes::install_url(url="https://cran.r-project.org/src/contrib/Archive/readr/readr_1.3.0.tar.gz", dependencies=TRUE, upgrade=TRUE);'
 $ R -e 'remotes::install_url(url="https://cran.r-project.org/src/contrib/Archive/tidymodels/tidymodels_0.1.4.tar.gz", dependencies=TRUE, upgrade=TRUE);'
 ```
 
