@@ -22,6 +22,6 @@ metrics <- function(data){
     df <- data.frame(data)
     # Compute RMSE, R_squared, MAE, given scored and labeled data
     get_metrics <- metric_set(rmse, rsq, mae)
-    output <- get_metrics(data=df, truth=ground_truth, estimate=prediction)
+    output <- get_metrics(data=df, truth=X0.ground_truth, estimate=X0.prediction)
     emit(output)
 }
